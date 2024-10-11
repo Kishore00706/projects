@@ -1,0 +1,131 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const TicTacToeApp());
+}
+
+class TicTacToeApp extends StatelessWidget {
+  const TicTacToeApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Tic Tac Toe',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const TicTacToeScreen(),
+    );
+  }
+}
+
+class TicTacToeScreen extends StatefulWidget {
+  const TicTacToeScreen({Key? key}) : super(key: key);
+
+  @override
+  _TicTacToeScreenState createState() => _TicTacToeScreenState();
+}
+
+class _TicTacToeScreenState extends State<TicTacToeScreen> {
+  List<String> _board = List.filled(9, ''); // 3x3 board
+  String _currentPlayer = 'X';
+  String _winner = '';
+  
+  void _resetGame() {
+    setState(() {
+      _board = List.filled(9, '');
+      _currentPlayer = 'X';
+      _winner = '';
+    });
+  }
+
+  void _makeMove(int index) {
+    if (_board[index].isEmpty && _winner.isEmpty) {
+      setState(() {
+        _board[index] = _currentPlayer;
+        _checkWinner();
+        _currentPlayer = _currentPlayer == 'X' ? 'O' : 'X';
+      });
+    }
+  }
+
+  void _checkWinner() {
+    final winningCombinations = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6],
+    ];
+
+    for (var combination in winningCombinations) {
+      if (_board[combination[0]] != '' &&
+          _board[combination[0]] == _board[combination[1]] &&
+          _board[combination[1]] == _board[combination[2]]) {
+        setState(() {
+          _winner = _board[combination[0]];
+        });
+        return;
+      }
+    }
+
+    if (!_board.contains('')) {
+      setState(() {
+        _winner = 'Draw';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Tic Tac Toe'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _resetGame,
+          ),
+        ],
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          if (_winner.isNotEmpty)
+            Text(
+              _winner == 'Draw' ? 'It\'s a Draw!' : 'Winner: $_winner',
+              style: const TextStyle(fontSize: 24),
+            ),
+          const SizedBox(height: 20),
+          GridView.builder(
+            shrinkWrap: true,
+            itemCount: 9,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+            ),
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                onTap: () => _makeMove(index),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black),
+                  ),
+                  child: Center(
+                    child: Text(
+                      _board[index],
+                      style: const TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
